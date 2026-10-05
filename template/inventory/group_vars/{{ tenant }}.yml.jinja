@@ -32,20 +32,19 @@ plexus_up: true
 #     healthz: /api/status-page/heartbeat   # mirrors the app's plexus.healthz label, so the proxy fences it (§ 5.5 PLX)
 plexus_apps: []
 
-# Base packages the host needs
-plexus_base_packages:
-  - ca-certificates
-  - curl
-  - gnupg
-  - python3-debian # required by deb822_repository module
-  - sudo
-  - ufw
-  - fail2ban
-  - unattended-upgrades
-  - acl
+# Human admins: a personal account on every host, key-only SSH, passwordless
+# sudo (configure_iam). At least one is required: after a first run as root,
+# connect as an admin, and root logins close (configure_sshd).
+#   - name: alice
+#     ssh_keys: ["ssh-ed25519 AAAA… alice@example.org"]
+configure_iam_admins: []
+
+# Host firewall (configure_firewall): inbound closed except SSH and what the
+# roles open themselves (install_caddy: 80, 443). List an overlay network's
+# interface here to accept its traffic whole, e.g. [wt0] for NetBird.
+configure_firewall_trusted_interfaces: []
 
 # Secrets
 plexus_deploy_pubkey: "{% raw %}{{ lookup('env', 'DEPLOY_PUBKEY') | default('', true) }}{% endraw %}"
-plexus_operator_pubkey: "{% raw %}{{ lookup('env', 'OPERATOR_PUBKEY') | default('', true) }}{% endraw %}"
 plexus_ghcr_user: "{% raw %}{{ lookup('env', 'GHCR_USER') | default('', true) }}{% endraw %}"
 plexus_ghcr_token: "{% raw %}{{ lookup('env', 'GHCR_TOKEN') | default('', true) }}{% endraw %}"
