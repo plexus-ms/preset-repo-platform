@@ -14,3 +14,8 @@ github_org:
   type: str
   help: "GitHub org of the tenant (image registry owner and forge org)"
   default: "{{ tenant }}"
+
+hosting:
+  type: bool
+  help: "Does this tenant build its own hosting layer (Proxmox hypervisor, backup server, ingress VM) instead of buying hosts from a provider?"
+  default: false

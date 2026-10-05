@@ -1,0 +1,55 @@
+---
+# The hosting layer under the {{ tenant }} platform hosts: what a provider
+# would otherwise supply. A hypervisor, a backup server for its guests, and an
+# ingress VM that shares one public address between the tenant VMs. Not part
+# of the operations platform (§ 7 PLX): provision.yml and configure.yml bind
+# apps to hosts; this playbook makes those hosts exist, reachable and
+# restorable.
+#
+#   mise hosting
+#
+# The inventory groups it expects (inventory/hosts.yml): proxmox, pbs, haproxy.
+# A fresh host is reached as root once and joins the overlay network with a
+# use-once setup key from the environment:
+#
+#   NETBIRD_SETUP_KEY=… mise hosting -- --limit <host> -u root -e ansible_host=<public name>
+#
+- name: Host baseline of the hosting layer
+  hosts: proxmox:pbs:haproxy
+  become: true
+  roles:
+    - plexus.platform.configure_base
+    - plexus.platform.configure_hostname
+    - plexus.platform.install_and_join_netbird
+    - plexus.platform.configure_iam
+    - plexus.platform.configure_unattended_upgrades
+    - plexus.platform.configure_mail # does nothing until configure_mail_smtp is set
+
+- name: Configure the hypervisor
+  hosts: proxmox
+  become: true
+  roles:
+    - plexus.platform.configure_proxmox # web UI on the overlay, firewall, storage, guest bridge, backup jobs
+
+# The firewall first: Proxmox Backup Server listens on every address, and
+# configure_pbs refuses to install it on a host whose firewall is not loaded.
+- name: Configure the backup server
+  hosts: pbs
+  become: true
+  roles:
+    - plexus.platform.configure_firewall
+    - plexus.platform.configure_pbs # datastore, retention, the clients that may push to it
+
+- name: Configure the ingress VM
+  hosts: haproxy
+  become: true
+  roles:
+    - plexus.platform.configure_haproxy  # SNI/Host routing to the tenant VMs, NAT for the guest bridge
+    - plexus.platform.configure_firewall # after the role that adds rules to it
+
+# Last: closes root logins once an admin has logged in.
+- name: Key-only SSH on the hosting layer's hosts
+  hosts: proxmox:pbs:haproxy
+  become: true
+  roles:
+    - plexus.platform.configure_sshd

@@ -29,6 +29,12 @@ depends = ["collections"]
 description = "Everyday pass: ingress routes, app dirs, .env, .env.secret, container re-creation"
 run = './ansible-playbookw configure.yml'
 
+{% if hosting %}
+[tasks.hosting]
+depends = ["collections"]
+description = "The hosting layer under the platform hosts: hypervisor, backup server, ingress VM"
+run = './ansible-playbookw hosting.yml'
+{% endif %}
 
 # Contract verbs (§ 5.1 PLX) — every tenant repo answers them; the ones a
 # platform repo has no use for exist and pass as documented no-ops.
@@ -47,6 +53,9 @@ description = "Static checks: playbook syntax against the pinned collection"
 run = [
     'ansible-playbook --syntax-check provision.yml',
     'ansible-playbook --syntax-check configure.yml',
+{%- if hosting %}
+    'ansible-playbook --syntax-check hosting.yml',
+{%- endif %}
 ]
 
 [tasks.test]
