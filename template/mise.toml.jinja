@@ -5,6 +5,9 @@
 # Verbs are asked as `mise :verb` at the repo root like in every tenant repo
 # (§ 4.1 PLX); that form needs the root marker even without sub-projects.
 monorepo_root = true
+# mise no longer walks the tree for project configs; the root is the only one.
+[monorepo]
+config_roots = ["."]
 
 [tools]
 hk = "latest" # Git hooks
