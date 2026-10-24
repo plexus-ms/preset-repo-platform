@@ -32,11 +32,11 @@ depends = ["collections"]
 description = "Everyday pass: ingress routes, app dirs, .env, .env.secret, container re-creation"
 run = './ansible-playbookw configure.yml'
 
-{% if hosting %}
-[tasks.hosting]
+{% if infrastructure %}
+[tasks.infrastructure]
 depends = ["collections"]
-description = "The hosting layer under the platform hosts: hypervisor, backup server, ingress VM"
-run = './ansible-playbookw hosting.yml'
+description = "The infrastructure layer under the platform hosts: hypervisor, backup server, ingress VM"
+run = './ansible-playbookw infrastructure.yml'
 {% endif %}
 
 # Contract verbs (§ 3 PLX-Repo) — every tenant repo answers them; the ones a
@@ -56,8 +56,8 @@ description = "Static checks: playbook syntax against the pinned collection"
 run = [
     'ansible-playbook --syntax-check provision.yml',
     'ansible-playbook --syntax-check configure.yml',
-{%- if hosting %}
-    'ansible-playbook --syntax-check hosting.yml',
+{%- if infrastructure %}
+    'ansible-playbook --syntax-check infrastructure.yml',
 {%- endif %}
 ]
 
