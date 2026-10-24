@@ -23,8 +23,14 @@ jobs:
   changes:
     uses: plexus-ms/ci-cd/.github/workflows/changes.yml@0.60.1
 
+  # Where each app deploys: the plexus_deploy_target of the inventory file
+  # that declares it (§ 3 PLX-Platform); an app without one falls back to the
+  # DEPLOY_HOST variable.
+  targets:
+    uses: plexus-ms/ci-cd/.github/workflows/targets.yml@0.60.1
+
   app:
-    needs: changes
+    needs: [changes, targets]
     # Empty matrix is an error, not a no-op — skip the job when nothing changed.
     if: ${{ needs.changes.outputs.apps != '[]' }}
     strategy:
@@ -35,7 +41,7 @@ jobs:
     with:
       tenant: {% endraw %}{{ tenant }}{% raw %}
       app: ${{ matrix.app }}
-      host: ${{ vars.DEPLOY_HOST }}
+      host: ${{ fromJSON(needs.targets.outputs.map)[matrix.app] || vars.DEPLOY_HOST }}
     secrets:
       ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
 {% endraw %}
