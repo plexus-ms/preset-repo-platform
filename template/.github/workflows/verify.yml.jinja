@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
 # Where the jobs run: the CI_RUNNER repo variable is the runner label, unset
 # for GitHub's runners.
 jobs:
